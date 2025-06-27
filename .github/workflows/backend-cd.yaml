@@ -145,6 +145,9 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
             
+      - name: List files in backend directory
+        run: ls -l ./starter/backend
+        
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
