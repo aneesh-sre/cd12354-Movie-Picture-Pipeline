@@ -10,7 +10,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: backend
-  EKS_CLUSTER_NAME: movie-pipeline-cluster
+  EKS_CLUSTER_NAME: cluster
 
 jobs:
   lint:
