@@ -185,20 +185,8 @@ jobs:
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/
           
-      - name: Check AWS identity
-        run: aws sts get-caller-identity
-        
-      - name: List EKS clusters
-        run: aws eks list-clusters --region us-east-1
-        
-      - name: Describe EKS cluster
-        run: aws eks describe-cluster --region us-east-1 --name cluster
-        
       - name: Update kube config
         run: aws eks update-kubeconfig --region us-east-1 --name cluster
-        
-      - name: Test kubectl access
-        run: kubectl get nodes
         
       - name: Set image tag
         run: |
