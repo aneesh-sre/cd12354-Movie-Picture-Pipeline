@@ -9,7 +9,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY: frontend-app
+  ECR_REPOSITORY: backend
   EKS_CLUSTER_NAME: movie-pipeline-cluster
 
 jobs:
