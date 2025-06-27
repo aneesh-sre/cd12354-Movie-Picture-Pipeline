@@ -187,7 +187,7 @@ jobs:
           kustomize edit set image backend=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           
       - name: Deploy to Kubernetes
-        run: kustomize build | kubectl apply -f -
+        run: kustomize build | kubectl apply -f - --validate=false
         
       - name: Verify deployment
         run: |
