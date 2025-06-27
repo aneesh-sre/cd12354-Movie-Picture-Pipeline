@@ -25,3 +25,4 @@ def test_movies_endpoint_returns_valid_data():
         assert len(data["movies"]) > 0
         assert "title" in data["movies"][0]
 # Trigger pipeline test
+# Trigger backend CD pipeline test - Fri 27 Jun 23:12:49 BST 2025
