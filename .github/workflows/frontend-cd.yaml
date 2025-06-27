@@ -11,6 +11,7 @@ env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: frontend-app
   EKS_CLUSTER_NAME: movie-pipeline-cluster
+  REACT_APP_MOVIE_API_URL: http://localhost:5000
 
 jobs:
   lint:
@@ -81,7 +82,7 @@ jobs:
         run: npm ci
         
       - name: Run tests
-        run: npm run test -- --watchAll=false --coverage --passWithNoTests
+        run: CI=true npm test
 
   build:
     name: Build
@@ -119,7 +120,7 @@ jobs:
         run: npm ci
         
       - name: Run tests
-        run: npm run test -- --watchAll=false --coverage --passWithNoTests
+        run: CI=true npm test
         
       - name: Build application
         run: npm run build
@@ -151,6 +152,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            REACT_APP_MOVIE_API_URL=${{ env.REACT_APP_MOVIE_API_URL }}
 
   deploy:
     name: Deploy
@@ -170,6 +173,10 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
+          
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
           
       - name: Update kube config
         run: aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
