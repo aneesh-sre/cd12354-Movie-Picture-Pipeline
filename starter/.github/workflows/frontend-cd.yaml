@@ -1,0 +1,53 @@
+name: Frontend CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm ci
+        working-directory: frontend
+      - run: CI=true npm test
+        working-directory: frontend
+      - run: npm run lint
+        working-directory: frontend
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | \
+          docker login --username AWS --password-stdin ${{ secrets.ECR_FRONTEND }}
+
+      - name: Build and push image
+        run: |
+          docker build --build-arg=REACT_APP_MOVIE_API_URL=http://${{ secrets.ECR_BACKEND }} \
+            -t ${{ secrets.ECR_FRONTEND }}:${{ github.sha }} frontend
+          docker push ${{ secrets.ECR_FRONTEND }}:${{ github.sha }}
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.CLUSTER_NAME }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          cd frontend/k8s
+          kustomize edit set image frontend=${{ secrets.ECR_FRONTEND }}:${{ github.sha }}
+          kustomize build | kubectl apply -f -
